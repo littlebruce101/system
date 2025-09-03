@@ -1,0 +1,5 @@
+/ecosystem/cordelia.identity.yaml   @cordelia-owner
+/ecosystem/starhawk.identity.yaml   @starhawk-owner
+/ecosystem/boundary_rules.md        @mediator-owner
+/ecosystem/router_rules.py          @mediator-owner
+/ecosystem/checks/                  @audit-owner
