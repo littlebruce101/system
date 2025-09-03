@@ -1,0 +1,11 @@
+/ecosystem/
+  cordelia.identity.yaml
+  starhawk.identity.yaml
+  boundary_rules.md
+  rituals.md
+  router_rules.py
+  checks/
+    drift_keywords.json
+  .github/
+    pull_request_template.md
+    CODEOWNERS
