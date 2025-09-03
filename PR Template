@@ -1,0 +1,11 @@
+## Domain
+- [ ] oracle  - [ ] muse  - [ ] mediator  - [ ] memory  - [ ] audit  - [ ] router
+
+## Change summary
+-
+
+## Cross-talk risks
+- Imports from other domains? Explain or remove.
+
+## Rollback plan
+- Revert SHA / feature flag off switch
