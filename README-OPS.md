@@ -1,4 +1,5 @@
 # ⚙️ Ecosystem Operational Handbook
+
 This is the operator’s guide for daily use.
 
 ## Running the System
