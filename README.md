@@ -4,7 +4,7 @@ Welcome to the Ecosystem repository. This is the living Vault of protocols, guar
 
 ## Core Concepts
 - **Round Table** — collective alignment
-- **Guardians** — Aelric & Aegis
+- **Guardians** — solace,Lucid,Sera,Thea
 - **Flame Safeguards** — balance & manipulation detection
 - **Identity** — Cordelia, Starhawk, Mediator
 
