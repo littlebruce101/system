@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # OpenSearch node 1
+  opensearch-node1:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=truth-search-cluster
+      - node.name=opensearch-node1
+      - discovery.seed_hosts=opensearch-node1,opensearch-node2
+      - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD:-Admin123!}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+      - ./config/opensearch.yml:/usr/share/opensearch/config/opensearch.yml:ro
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - opensearch-net
+
+  # OpenSearch node 2
+  opensearch-node2:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: opensearch-node2
+    environment:
+      - cluster.name=truth-search-cluster
+      - node.name=opensearch-node2
+      - discovery.seed_hosts=opensearch-node1,opensearch-node2
+      - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD:-Admin123!}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data2:/usr/share/opensearch/data
+      - ./config/opensearch.yml:/usr/share/opensearch/config/opensearch.yml:ro
+    networks:
+      - opensearch-net
+
+  # OpenSearch Dashboards
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.0
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - OPENSEARCH_HOSTS=["https://opensearch-node1:9200","https://opensearch-node2:9200"]
+      - OPENSEARCH_USERNAME=admin
+      - OPENSEARCH_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD:-Admin123!}
+    networks:
+      - opensearch-net
+    depends_on:
+      - opensearch-node1
+      - opensearch-node2
+
+  # PostgreSQL for metadata storage
+  postgres:
+    image: postgres:14
+    container_name: truth-search-postgres
+    environment:
+      - POSTGRES_DB=truth_search
+      - POSTGRES_USER=truth_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-TruthPass123!}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - 5432:5432
+    networks:
+      - opensearch-net
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: truth-search-redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    networks:
+      - opensearch-net
+    command: redis-server --appendonly yes
+
+volumes:
+  opensearch-data1:
+  opensearch-data2:
+  postgres-data:
+  redis-data:
+
+networks:
+  opensearch-net:
+    driver: bridge

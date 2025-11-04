@@ -1,4 +1,4 @@
 {
-  "cordelia_flags": ["branch", "scenario", "ETA", "deadline"],
-  "starhawk_flags": ["breathe", "felt sense", "self-soothe", "hug"]
+  "cordelia_flags": ["breathe", "felt sense", "self-soothe", "hug", "steady", "tend", "compassion"],
+  "starhawk_flags": ["branch", "scenario", "ETA", "deadline", "risk window", "optionality"]
 }
