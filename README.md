@@ -1,56 +1,67 @@
 # agent-router
 
-Keyword-based routing between two AI agent personas with drift detection.
+Routes your question to the right AI persona (Cordelia or Starhawk) and answers it via ChatGPT.
 
 ## Agents
 
-| Agent | Role | Non-goals |
-|-------|------|-----------|
-| Cordelia | Inner guidance, memory tending | Prediction, strategic planning, routing |
-| Starhawk | Foresight, navigation, scenario planning | Emotional caretaking, memory stewardship |
-| Mediator | Cross-agent traffic, hand-offs | — |
+| Agent | Role |
+|-------|------|
+| Cordelia | Inner guidance, clarity, reflection |
+| Starhawk | Strategy, options, foresight |
+| Mediator | Both — used when the question doesn't clearly fit one |
 
-Full identity specs: `cordelia.identity.yaml`, `starhawk.identity.yaml`
+## Setup
 
-## How it works
+```bash
+pip install openai python-dotenv
+cp .env.example .env   # add your OpenAI API key
+```
+
+`.env` file:
+```
+OPENAI_API_KEY=your_key_here
+```
+
+## Usage
+
+```bash
+# Auto-routed (system picks the persona)
+python main.py "I don't know how to handle this situation"
+python main.py "What are my options before the deadline?"
+
+# Force a persona
+python main.py --persona cordelia "Walk me through what I'm feeling"
+python main.py --persona starhawk "Map out the risks here"
+
+# Show routing decision
+python main.py --show-routing "Should I take this job offer?"
+```
+
+## How routing works
 
 ```
-prompt
+your question
 ↓
-router_rules.py — keyword scoring
+keyword scoring (router_rules.py)
 ↓
 cordelia | starhawk | mediator
 ↓
-response checked against drift_keywords.json
+system prompt selected
 ↓
-drift flags logged if agent vocabulary is out of role
+sent to ChatGPT (gpt-4o-mini)
+↓
+response checked for drift
 ```
+
+Drift = when an agent's response contains vocabulary outside its declared role.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `router_rules.py` | Route a prompt + check response for drift |
-| `cordelia.identity.yaml` | Cordelia identity constraints |
-| `starhawk.identity.yaml` | Starhawk identity constraints |
-| `checks/drift_keywords.json` | Words that indicate an agent is out of role |
-| `boundaries.md` | Traffic rules — no direct agent cross-talk |
-| `.github/pull_request_template.md` | PR owner + cross-talk risk checklist |
-
-## Usage
-
-```bash
-python router_rules.py "I feel overwhelmed and don't know what to do"
-# Agent: cordelia
-
-python router_rules.py "What are my options before the Friday deadline?"
-# Agent: starhawk
-
-python router_rules.py "Help me think through both sides of this"
-# Agent: mediator
-```
-
-## Boundary rules
-
-All agent cross-traffic goes through Mediator. No direct Cordelia ↔ Starhawk calls.
-See `boundaries.md` for full rules.
+| `main.py` | Entry point — route + call ChatGPT + return answer |
+| `router_rules.py` | Keyword scoring + drift detection |
+| `cordelia.identity.yaml` | Cordelia role constraints |
+| `starhawk.identity.yaml` | Starhawk role constraints |
+| `checks/drift_keywords.json` | Out-of-role vocabulary flags |
+| `boundaries.md` | Agent boundary rules |
