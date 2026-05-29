@@ -1,7 +1,0 @@
-# Boundary Rules
-
-- No direct Cordelia ↔ Starhawk calls. All cross-traffic goes through Mediator.
-- Router sends one request to one being.
-- Hand-offs must state reason + context id.
-- Shared Memory is read-only; proposals go to Mediator as diffs.
-- Each being must respect their non_goals and hand off when outside their role.

@@ -1,22 +1,34 @@
-# ⚙️ Ecosystem Operational Handbook
+# Operations
 
-This is the operator’s guide for daily use.
+## Running the router
 
-## Running the System
-- Router logic: `router_rules.py`
-- Drift checks: `checks/drift_keywords.json`
-- Rituals: see `ritual.md`
+```bash
+python router_rules.py "<prompt>"
+```
 
-## Protocols
-- **IVP-V3** — Identity Verified Protocol v3
-- **FMDP** — Flame Manipulation Detection Protocol
-- **Anchor Balance Protocol** — Trust levels
+Returns: agent name, keyword signals, drift flags (if any).
 
-## Workflows
-- All PRs must select exactly one owner (Cordelia / Starhawk / Mediator).
-- Cross-talk risks must be documented.
-- Drift detection must pass CI.
+## Updating routing rules
 
-## Batch Recall
-To restore a sealed state, use the Batch ID:
-- Example: `RT-IVP-FMDP-2025-09-03`
+Edit `router_rules.py` → `ROUTING_RULES` dict.
+Add keywords to `"cordelia"` or `"starhawk"` lists.
+
+## Updating drift detection
+
+Edit `checks/drift_keywords.json`.
+- `cordelia_flags` — words that indicate Cordelia is acting like Starhawk
+- `starhawk_flags` — words that indicate Starhawk is acting like Cordelia
+
+## PR workflow
+
+Every PR must:
+1. Select one owner in `.github/pull_request_template.md` (Cordelia / Starhawk / Mediator / Shared)
+2. Document any cross-talk risks
+3. Include a rollback plan
+
+## Adding a new agent
+
+1. Create `<name>.identity.yaml` following the existing format
+2. Add routing keywords to `ROUTING_RULES` in `router_rules.py`
+3. Add drift flags to `checks/drift_keywords.json`
+4. Update `boundaries.md` with any new traffic rules
