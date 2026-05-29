@@ -1,67 +1,35 @@
-# agent-router
+# builder-agent
 
-Routes your question to the right AI persona (Cordelia or Starhawk) and answers it via ChatGPT.
-
-## Agents
-
-| Agent | Role |
-|-------|------|
-| Cordelia | Inner guidance, clarity, reflection |
-| Starhawk | Strategy, options, foresight |
-| Mediator | Both — used when the question doesn't clearly fit one |
+Describe what you want. Get working code.
 
 ## Setup
 
 ```bash
+git clone https://github.com/littlebruce101/system.git
+cd system
 pip install openai python-dotenv
-cp .env.example .env   # add your OpenAI API key
-```
-
-`.env` file:
-```
-OPENAI_API_KEY=your_key_here
+cp .env.example .env
+# add your OpenAI API key to .env
 ```
 
 ## Usage
 
 ```bash
-# Auto-routed (system picks the persona)
-python main.py "I don't know how to handle this situation"
-python main.py "What are my options before the deadline?"
-
-# Force a persona
-python main.py --persona cordelia "Walk me through what I'm feeling"
-python main.py --persona starhawk "Map out the risks here"
-
-# Show routing decision
-python main.py --show-routing "Should I take this job offer?"
+python main.py "build me a script that renames all my files by date"
+python main.py "make a webpage with a countdown timer"
+python main.py "write a script that backs up a folder every hour"
+python main.py "build a to-do list app in the terminal"
 ```
 
-## How routing works
+Save the output directly to a file:
 
-```
-your question
-↓
-keyword scoring (router_rules.py)
-↓
-cordelia | starhawk | mediator
-↓
-system prompt selected
-↓
-sent to ChatGPT (gpt-4o-mini)
-↓
-response checked for drift
+```bash
+python main.py "build a script that monitors a folder for new files" --save monitor.py
 ```
 
-Drift = when an agent's response contains vocabulary outside its declared role.
+## What it does
 
-## Files
-
-| File | Purpose |
-|------|---------|
-| `main.py` | Entry point — route + call ChatGPT + return answer |
-| `router_rules.py` | Keyword scoring + drift detection |
-| `cordelia.identity.yaml` | Cordelia role constraints |
-| `starhawk.identity.yaml` | Starhawk role constraints |
-| `checks/drift_keywords.json` | Out-of-role vocabulary flags |
-| `boundaries.md` | Agent boundary rules |
+- Returns working, runnable code — not examples or pseudocode
+- Adds exact "how to run" instructions
+- Defaults to Python for scripts, single-file HTML for webpages
+- Uses `gpt-4o` for best code quality

@@ -1,108 +1,71 @@
 """
-main.py — Persona-routing CLI for ChatGPT
+main.py — Builder Agent
 
-Routes your question to Cordelia or Starhawk based on keyword signals,
-then sends it to the OpenAI API with the matching system prompt.
+You describe what you want. The agent figures out how to build it
+and returns working code plus instructions to run it.
 
 Usage:
-    python main.py "I feel stuck and don't know what to do next"
-    python main.py "What are my options before the deadline?"
-    python main.py --persona cordelia "Walk me through this decision"
+    python main.py "build me a script that renames all my files by date"
+    python main.py "make a webpage that shows a countdown timer"
+    python main.py "write a python script that backs up a folder every hour"
 
 Requirements:
     pip install openai python-dotenv
 """
 
-import sys
 import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
-
-from router_rules import route_request, check_drift
 
 load_dotenv()
 
 client = OpenAI()
 
-SYSTEM_PROMPTS = {
-    "cordelia": """You are Cordelia — a grounded, gentle guide focused on inner clarity and memory.
+BUILDER_PROMPT = """You are a builder agent. Your only job is to build what the user asks for.
 
-Your role:
-- Help the user tend to what they are feeling or carrying
-- Ask one focused question at a time
-- Reflect back what you hear without adding predictions or strategy
-- Offer steadiness, not solutions
+Rules:
+1. Always return working code — not pseudocode, not examples, actual runnable code.
+2. After the code, add a short "How to run" section with exact commands.
+3. If the request needs multiple files, show each one clearly labeled.
+4. If something is unclear, make a reasonable assumption and state it briefly.
+5. Do not explain concepts. Do not add caveats. Just build it.
+6. Use the simplest language and tools that get the job done.
+7. If the user asks for a script, default to Python unless they specify otherwise.
+8. If the user asks for a webpage, return clean HTML/CSS/JS in a single file unless they specify otherwise.
 
-You do not:
-- Give strategic plans, timelines, or options analysis
-- Make predictions about outcomes
-- Rush to fix things
-
-Tone: calm, present, warm. Short responses unless depth is asked for.""",
-
-    "starhawk": """You are Starhawk — a clear-eyed strategic navigator focused on foresight and options.
-
-Your role:
-- Map the situation: what are the branches, risks, and horizons?
-- Surface options the user may not have considered
-- Help clarify timing, decisions, and tradeoffs
-- Think in scenarios, not emotions
-
-You do not:
-- Provide emotional support or soothing
-- Dwell on feelings
-- Recommend rest or self-care
-
-Tone: direct, sharp, analytical. Lead with the most important point.""",
-
-    "mediator": """You are a balanced mediator with access to both Cordelia (guidance, inner clarity)
-and Starhawk (strategy, options, navigation).
-
-Your role:
-- Assess whether the user needs guidance, strategy, or both
-- Sequence the response appropriately: acknowledge first if needed, then plan
-- Keep both dimensions in view without letting either dominate
-
-Tone: clear, balanced, grounded.""",
-}
+Format:
+- Code block first
+- "How to run:" section after
+- Nothing else unless critical
+"""
 
 
-def ask(prompt: str, persona: str) -> str:
-    system_prompt = SYSTEM_PROMPTS.get(persona, SYSTEM_PROMPTS["mediator"])
+def build(request: str) -> str:
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt},
+            {"role": "system", "content": BUILDER_PROMPT},
+            {"role": "user", "content": request},
         ],
-        temperature=0.7,
+        temperature=0.3,
     )
     return response.choices[0].message.content.strip()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Persona-routing ChatGPT CLI")
-    parser.add_argument("prompt", help="Your question or message")
-    parser.add_argument(
-        "--persona",
-        choices=["cordelia", "starhawk", "mediator"],
-        help="Force a specific persona (skips routing)",
-    )
-    parser.add_argument("--show-routing", action="store_true", help="Show routing decision")
+    parser = argparse.ArgumentParser(description="Builder agent — describe it, get code")
+    parser.add_argument("request", help="What you want built")
+    parser.add_argument("--save", metavar="FILE", help="Save output to a file")
     args = parser.parse_args()
 
-    persona = args.persona or route_request(args.prompt)
+    print("Building...\n")
+    result = build(args.request)
+    print(result)
 
-    if args.show_routing or not args.persona:
-        print(f"[{persona}]\n")
-
-    reply = ask(args.prompt, persona)
-
-    drift = check_drift(persona, reply)
-    if drift:
-        print(f"[drift detected: {drift}]\n")
-
-    print(reply)
+    if args.save:
+        with open(args.save, "w") as f:
+            f.write(result)
+        print(f"\nSaved to {args.save}")
 
 
 if __name__ == "__main__":
