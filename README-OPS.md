@@ -4,9 +4,11 @@
 
 ```bash
 python router_rules.py "<prompt>"
+python router_rules.py "<prompt>" --response "<agent response>"
 ```
 
 Returns: agent name, keyword signals, drift flags (if any).
+Pass `--response` to also check an agent's reply for drift vocabulary.
 
 ## Updating routing rules
 

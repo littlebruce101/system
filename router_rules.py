@@ -77,12 +77,14 @@ def route_and_check(prompt: str, response: str = "") -> dict:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python router_rules.py \"<prompt>\"")
-        sys.exit(1)
+    import argparse
 
-    prompt = sys.argv[1]
-    result = route_and_check(prompt)
+    parser = argparse.ArgumentParser(description="Route a prompt to an agent and optionally check a response for drift.")
+    parser.add_argument("prompt", help="The user prompt to route")
+    parser.add_argument("--response", metavar="TEXT", help="Agent response to check for drift", default="")
+    args = parser.parse_args()
+
+    result = route_and_check(args.prompt, args.response)
 
     print(f"Agent:    {result['agent']}")
     print(f"Signals:  cordelia={result['cordelia_signals']}  starhawk={result['starhawk_signals']}")
